@@ -1,0 +1,99 @@
+---
+title: "cosas"
+author: "César López Mantecón"
+date: "2022-11-13"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Trabajo de estadística
+
+## Introducción
+
+En este trabajo se pretende determinar si existe una relación entre la edad, tipo de estudios y tiempo invertido en extraescolares o trabajo influye en el tiempo que se usan distintos útiles electrónicos (i.e. móviles, televisión, ordenadores, etc.) con fines lúdicos. 
+
+Las variabes a estudiar son: 
+
++ Variable principal: tiempo empleado en estos dispositivos al día
+
++ Variables secundarias: 
+
+  + Género
+  
+  + Nivel de estudios
+  
+  + Tiempo empleado en extraescolares
+  
+  + Tiempo empleado en actividad remunerada
+  
+  
+Los datos han sido recogidos mediante una encuesta realizada a personas entre 15 y 50 años, en su mayoría universitarios de ente 17 y 24 años. 
+
+## Estudio descriptivo 
+
+Resumen de los datos: 
+
+```{r}
+library(readxl)
+data <- read_excel("data.xlsx")
+library(summarytools)
+descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`)
+```
+
+Considero relevante distintguir 5 grupos, base a los estuidios que cursan: 
+
+```{r}
+ABStable <- table(data$`Formación (0-5)`)
+lables <- c("No estuidante", "otro", "FP", "Instituto", "Universidad")
+row.names(ABStable) <- lables
+ABStable
+RELtable <- prop.table(ABStable)
+RELtable
+```
+
+- Instituto y formación profesional 
+
+```{r}
+library(readxl)
+data <- read_excel("data.xlsx")
+library(summarytools)
+descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`[data$`Formación (0-5)`<=4 & data$`Formación (0-5)` > 2])
+```
+
+- Universitarios 
+
+```{r}
+library(readxl)
+data <- read_excel("data.xlsx")
+library(summarytools)
+descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`[data$`Formación (0-5)`== 5])
+```
+
+- No estudiantes 
+
+```{r}
+library(readxl)
+data <- read_excel("data.xlsx")
+library(summarytools)
+descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`[data$`Formación (0-5)`== 1])
+```
+
+
+
+Podemos comprobar que los estudiantes de instituto cuentan con una media de 1h superior al de la muestra, mientras que los estudiantes universitarios están bastante próximos al de al media muestral (dato que puede verse influenciado por el hecho de que representan un 59.77% de la muestra). Los no estudiantes, en cambio, tienen una media de uso muy inferior a la media muestral. 
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
