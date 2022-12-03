@@ -1,5 +1,5 @@
 ---
-title: "cosas"
+title: "Proyecto final - Estadística"
 author: "César López Mantecón"
 date: "2022-11-13"
 output:
@@ -36,64 +36,17 @@ Los datos han sido recogidos mediante una encuesta realizada a personas entre 15
 
 ## Estudio descriptivo 
 
-Resumen de los datos: 
+Resumen de los datos de la variable 'Tiempo de uso de pantalla': 
 
 ```{r}
 library(readxl)
-data <- read_excel("data.xlsx")
+data <- read_excel("data_filtered.xlsx")
 library(summarytools)
 descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`)
+ABStable <- table(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`)
+barplot(ABStable)
+boxplot(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`)
 ```
 
-Considero relevante distintguir 5 grupos, base a los estuidios que cursan: 
+En esta imagen podemos apreciar como el timepo de uso de pantallas es una distribución más o menos simétrica, 
 
-```{r}
-ABStable <- table(data$`Formación (0-5)`)
-lables <- c("No estuidante", "otro", "FP", "Instituto", "Universidad")
-row.names(ABStable) <- lables
-ABStable
-RELtable <- prop.table(ABStable)
-RELtable
-```
-
-- Instituto y formación profesional 
-
-```{r}
-library(readxl)
-data <- read_excel("data.xlsx")
-library(summarytools)
-descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`[data$`Formación (0-5)`<=4 & data$`Formación (0-5)` > 2])
-```
-
-- Universitarios 
-
-```{r}
-library(readxl)
-data <- read_excel("data.xlsx")
-library(summarytools)
-descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`[data$`Formación (0-5)`== 5])
-```
-
-- No estudiantes 
-
-```{r}
-library(readxl)
-data <- read_excel("data.xlsx")
-library(summarytools)
-descr(data$`Tiempo de uso lúdico del ordenador/móvil/tele diario`[data$`Formación (0-5)`== 1])
-```
-
-
-
-Podemos comprobar que los estudiantes de instituto cuentan con una media de 1h superior al de la muestra, mientras que los estudiantes universitarios están bastante próximos al de al media muestral (dato que puede verse influenciado por el hecho de que representan un 59.77% de la muestra). Los no estudiantes, en cambio, tienen una media de uso muy inferior a la media muestral. 
-
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,104 @@
+---
+title: "Estadística-FinalProject"
+author: "César López Mantecón y Manuel Gómez-Plana Rodriguez"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+En este estudio se pretende establacer si existe alguna relación entre el tiempo de uso de los dispositivos electrónicos con fines de ocio y el tiempo dedicado a actividades extracurriculares de estudiantes universitarios y de educación secundaria. Además, se pretenderá establecer si hombres y mujeres presentan diferentes tendenciase en el tiempo de uso de estos dispositivos para su entretenimiento. 
+
+## Variables estudiadas 
++ Variable principal: 
+  - T: tiempo de uso de dispositivos con fines de ocio al día.
+
++ Variables secundarias:
+  - Sexo: 1 si es hombre, 0 si es mujer. 
+  - Edad: número de años de la persona 
+  - T.trab: tiempo dedicado a una actividad remunerada a la semana. 
+  - T.Ext: tiempo dedicado a una actividad extracurricular a la semana.
+  - Estudios: nivel de estudios cursados en el momento. 1:= Universidad, 0:= Instituto
+
+
+___
+
+# Estudio descriptivo
+
+## Resumen de T: 
+**Tabla de frencuencias absolutas de T:**
+```{r}
+library(readxl)
+data <- read_excel("data_filtered.xlsx")
+ABStable <- table(data$'T')
+ABStable
+```
+
+**Tabla de frecuencias relativas de T:**
+```{r}
+RELtable <- prop.table(ABStable)
+RELtable
+```
+Los valores más comunes son 3, 4 y 5. Tratándose de un 58% de la muestra, aproximadamente. Respectivamente, estos valores aparecen con una frecuencia absoluta de: 16, 15 y 12. 
+
+**Medidas características de T:**
+```{r}
+suppressWarnings(library(summarytools))
+descr(data$T)
+```
+
+**Diagrama de barras de T** 
+```{r}
+barplot(ABStable)
+```
+
+La distribución muestra una asimetría positiva. Vemos que los datos más frecuentes son 3, 4 y 5, como ya habíamos confirmado antes. También vemos qque tiene forma acampanada. 
+
+```{r}
+boxplot(ABStable)
+```
+En el diagrama de caja se aprecia la ausencia de datos atípicos. De nuevo confirmamos que la distribución es asimétrica, teniendo una cola no muy larga hacia la derecha. Otro hecho que destaca es la ausencia de datos atípicos.
+
+
+Para determinar si hay diferencias notorias por sexo, separamos la población en hombres y mujeres. No sin antes echar un vistazo a la proporción de estos:
+Proporción por sexo: 
+```{r}
+ABStable_sexo <- table(data$Sexo)
+lbls <- c("Mujeres", "Hombre")
+row.names(ABStable_sexo) <- lbls
+RELTable_sexo <- prop.table(table(data$`Sexo`))
+row.names(RELTable_sexo) <- lbls
+RELTable_sexo
+pie(ABStable_sexo, col=c("azure2", "darkolivegreen1"))
+```
+Nos damos cuenta que los datos muestrales son en su mayoría de hombres, presentando un 60.81% de los datos. Mientras que las mujeres representan el 39.19% restante. 
+
+Diagramas segregados por sexo: 
+```{r}
+ABStable_mujer <- table(data$T[data$Sexo==0])
+descr(data$T[data$Sexo==0])
+ABStable_sexo <- table(data$T[data$Sexo==1])
+descr(data$T[data$Sexo==1])
+par(mfrow=c(1, 2))
+barplot(ABStable_mujer, xlab="Mujeres", ylab="frecuencia")
+barplot(ABStable_sexo, xlab="Hombres", ylab="frecuencia")
+```
+
+Al comparar las dos poblaciones, nos damos cuenta de que las mujeres tienen una media superior (5.25h) que los hombres (4.14h). Esta diferencia de medias se aprecia mejor al comparar los diagramas de caja. 
+```{r}
+boxplot(data$T ~ data$Sexo, xlab = "Sexo",
+ylab = "Tiempo de uso de dispositivos", names = c("Mujeres", "Hombres"))
+
+```
+Un pequeño detalle a destacar es la presencia de un dato atípico en la población femenina.
+
+___
+# Ajuste de distribución
+
+```{r}
+T <- sqrt(data$T)
+
+```
