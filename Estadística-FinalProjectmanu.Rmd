@@ -1,0 +1,224 @@
+---
+title: "Estadística-FinalProject"
+author: "César López Mantecón y Manuel Gómez-Plana Rodriguez"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+En este estudio se pretende establacer si existe alguna relación entre el tiempo de uso de los dispositivos electrónicos con fines de ocio y el tiempo dedicado a actividades extracurriculares de estudiantes universitarios y de educación secundaria. Además, se pretenderá establecer si hombres y mujeres presentan diferentes tendenciase en el tiempo de uso de estos dispositivos para su entretenimiento. 
+
+## Variables estudiadas 
++ Variable principal: 
+  - T: tiempo de uso de dispositivos con fines de ocio al día.
+
++ Variables secundarias:
+  - Sexo: 1 si es hombre, 0 si es mujer. 
+  - Edad: número de años de la persona 
+  - T.trab: tiempo dedicado a una actividad remunerada a la semana. 
+  - T.Ext: tiempo dedicado a una actividad extracurricular a la semana.
+  - Estudios: nivel de estudios cursados en el momento. 1:= Universidad, 0:= Instituto
+
+
+___
+
+# Estudio descriptivo
+
+## Resumen de T: 
+**Tabla de frencuencias absolutas de T:**
+```{r}
+library(readxl)
+data <- read_excel("data_filtered.xlsx")
+ABStable <- table(data$'T')
+ABStable
+```
+
+**Tabla de frecuencias relativas de T:**
+```{r}
+RELtable <- prop.table(ABStable)
+RELtable
+```
+Los valores más comunes son 3, 4 y 5. Tratándose de un 58% de la muestra, aproximadamente. Respectivamente, estos valores aparecen con una frecuencia absoluta de: 16, 15 y 12. 
+
+**Medidas características de T:**
+```{r}
+suppressWarnings(library(summarytools))
+descr(data$T)
+```
+
+**Diagrama de barras de T** 
+```{r}
+barplot(ABStable)
+```
+
+La distribución muestra una asimetría positiva. Vemos que los datos más frecuentes son 3, 4 y 5, como ya habíamos confirmado antes. También vemos qque tiene forma acampanada. 
+
+```{r}
+boxplot(ABStable)
+```
+En el diagrama de caja se aprecia la ausencia de datos atípicos. De nuevo confirmamos que la distribución es asimétrica, teniendo una cola no muy larga hacia la derecha. Otro hecho que destaca es la ausencia de datos atípicos.
+
+
+Para determinar si hay diferencias notorias por sexo, separamos la población en hombres y mujeres. No sin antes echar un vistazo a la proporción de estos:
+Proporción por sexo: 
+```{r}
+ABStable_sexo <- table(data$Sexo)
+lbls <- c("Mujeres", "Hombre")
+row.names(ABStable_sexo) <- lbls
+RELTable_sexo <- prop.table(table(data$`Sexo`))
+row.names(RELTable_sexo) <- lbls
+RELTable_sexo
+pie(ABStable_sexo, col=c("azure2", "darkolivegreen1"))
+```
+Nos damos cuenta que los datos muestrales son en su mayoría de hombres, representando un 60.81% de los datos. Mientras que las mujeres representan el 39.19% restante. 
+
+Diagramas segregados por sexo: 
+```{r}
+ABStable_mujer <- table(data$T[data$Sexo==0])
+descr(data$T[data$Sexo==0])
+ABStable_sexo <- table(data$T[data$Sexo==1])
+descr(data$T[data$Sexo==1])
+par(mfrow=c(1, 2))
+barplot(ABStable_mujer, xlab="Mujeres", ylab="frecuencia")
+barplot(ABStable_sexo, xlab="Hombres", ylab="frecuencia")
+```
+
+Al comparar las dos poblaciones, nos damos cuenta de que las mujeres tienen una media superior (5.25h) que los hombres (4.14h). Esta diferencia de medias se aprecia mejor al comparar los diagramas de caja. 
+```{r}
+boxplot(data$T ~ data$Sexo, xlab = "Sexo",
+ylab = "Tiempo de uso de dispositivos", names = c("Mujeres", "Hombres"))
+
+```
+
+Un pequeño detalle a destacar es la presencia de un dato en ambas poblaciones.
+
+___
+
+# Ajuste de distribución
+En este apartado pretendemos comprobar si nuestra distribución puede ajustarse a una distribución normal.
+
+Ajuste a una normal:
+```{r}
+library(fitdistrplus)
+normalfit <- fitdist(data$T, "norm")
+normalfit
+```
+
+Test chi-cuadrado:
+```{r}
+par(mfrow=c(1, 2))
+barplot(table(data$T),  xlab = "observados")
+norm = dnorm(c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11),normalfit$estimate[1], normalfit$estimate[2])
+norm
+esperados = norm*74 #probabilidad por tamaño muestral
+observados = table(data$T)
+observados
+length(observados)
+esperados
+barplot(esperados, xlab="esperados")
+chisq.test(observados, esperados,rescale.p = T)
+pchisq(77, df = 72, lower.tail = F)#reajustando df 
+```
+
+Al tener un p-valor > 0.05 (0.3218), concluimos que el ajuste es correcto. Nuestra distribución se ajusta a una normal: 
+
+$$T\sim N(4.63, 2.22)$$
+
+___
+# Intervalos de confianza
+
+## $\mu$
+
+Cáculo del intervalo de confianza.
+
+```{r}
+alpha = 0.05
+xmean = mean(data$T)
+xsd = sd(data$T)
+t = qt(alpha/2, df=73, lower.tail = FALSE)
+LowerLimit = xmean - t * xsd / sqrt(74)
+UpperLimit = xmean + t * xsd / sqrt(74)
+LowerLimit
+UpperLimit
+```
+$$\mu\in(4.1170,\ 5.1532)$$
+
+# $\sigma^2$
+
+```{r}
+n = length(data$T)
+s2 = var(data$T)
+chi.lower = qchisq(1-alpha/2, df = n-1)
+chi.upper = qchisq(alpha/2, df = n-1)
+LowerLimit = (n-1) * s2 / chi.lower
+UpperLimit = (n-1) * s2 / chi.upper
+LowerLimit
+UpperLimit
+```
+
+$$\sigma^2\in (3.7065,\ 7.1228)$$
+___
+# Contraste de hipótesis
+La hipótesis que queremos comprobar es: "las mujeres usan más tiempo las pantalla de media que los hombres".
+
+H0: $\mu_{1} = \mu_2$
+
+H1: $\mu_{1} > \mu_2$
+
+Donde: $\mu_1$:= "media de la población masculina" y $\mu_2$:="media de la población masculina". 
+
+Podemos usar el z.test ya que nuestra población tiene $n>30$
+```{r}
+library(BSDA)
+z.test(data$T[data$Sexo==0], data$T[data$Sexo==1], alternative="greater", sigma.x = sd(data$T[data$Sexo==0]), sigma.y=sd(data$T[data$Sexo==1]))
+```
+Dado que el p-valor es menor que 0.05, rechazamos la hipótesis nula. Podemos afirmar, que las mujeres usan más tiempo de media los dispositivos electronicos con fines de ocio. 
+```
+
+Al tener un $p-valor < 0.05$ podemos rechazar la hipótesis nula y afirmar que las mujeres usan de media más tiempo los dispositivos electrónicos que los hombres con fines de ocio. 
+
+___
+
+# Regresión lineal
+
+En este apartado trataremos de ver si existe una relación lineal entre T y el tiempo empleado en actividades extracurriculares. 
+Para esto, agruparemos las variables T.trab y T.Ext en una única variable que las sume, Ext.  
+
+```{r}
+T = data$T
+Ext = data$T.Ext + data$T.trab
+plot(Ext, T, xlab="Tiempo en actv. extracurriculares", ylab="T")
+plot(data$Edad, T, xlab="Edad", ylab="T")
+```
+Al comparar tanto con la edad como con tiempo dedicado a actividades extracurriculares, vemos que la distribución se asemeja poco a una línea. Esto puede deberse al escaso rango de edades que posee nuestra muestra. 
+Calculando correlaciones: 
+
+Correlacíon Eda~T: 
+```{r}
+cor(data$Edad, T)
+```
+
+COrrelación Ext~T:
+```{r}
+cor(T, Ext)
+```
+
+De ambas podemos concluir que el uso de dispositivos con fines lúdicos decrece con los años, pero es un coeficiente tan bajo que no podemos afirmar que la haya una variación lineal en ninguno de los casos.Aplicándolo al caso más favorable, horas dedicadas a una actividad extracurricular~T:
+
+```{r}
+cov(Ext~T, data=data)
+RegressionModel <- lm(Ext~T, data=data)
+print(RegressionModel)
+summary(RegressionModel)
+plot(data$T)
+abline(RegressionModel)
+par(mfrow=c(2,2))
+plot(RegressionModel)
+
+```
+
+Se aprecia que los errores se distribuyen de manera no aleatoria, por tanto la distribución no es buena 
